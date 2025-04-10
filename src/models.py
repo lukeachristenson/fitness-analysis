@@ -4,7 +4,6 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, f1_score, classification_report
 from sklearn.pipeline import Pipeline
-import xgboost as xgb
 import joblib
 import os
 
@@ -15,7 +14,7 @@ def create_classification_model(model_type='rf', random_state=42):
     Parameters:
     -----------
     model_type : str
-        Type of model ('lr' for Logistic Regression, 'rf' for Random Forest, 'xgb' for XGBoost)
+        Type of model ('lr' for Logistic Regression, 'rf' for Random Forest)
     random_state : int
         Random seed for reproducibility
         
@@ -28,10 +27,8 @@ def create_classification_model(model_type='rf', random_state=42):
         model = LogisticRegression(random_state=random_state, max_iter=1000)
     elif model_type == 'rf':
         model = RandomForestClassifier(random_state=random_state)
-    elif model_type == 'xgb':
-        model = xgb.XGBClassifier(random_state=random_state)
     else:
-        raise ValueError(f"Invalid model type: {model_type}. Choose from 'lr', 'rf', or 'xgb'.")
+        raise ValueError(f"Invalid model type: {model_type}. Choose from 'lr' or 'rf'.")
     
     return model
 
@@ -42,7 +39,7 @@ def create_regression_model(model_type='rf', random_state=42):
     Parameters:
     -----------
     model_type : str
-        Type of model ('lr' for Linear Regression, 'rf' for Random Forest, 'xgb' for XGBoost)
+        Type of model ('lr' for Linear Regression, 'rf' for Random Forest)
     random_state : int
         Random seed for reproducibility
         
@@ -55,10 +52,8 @@ def create_regression_model(model_type='rf', random_state=42):
         model = LinearRegression()
     elif model_type == 'rf':
         model = RandomForestRegressor(random_state=random_state)
-    elif model_type == 'xgb':
-        model = xgb.XGBRegressor(random_state=random_state)
     else:
-        raise ValueError(f"Invalid model type: {model_type}. Choose from 'lr', 'rf', or 'xgb'.")
+        raise ValueError(f"Invalid model type: {model_type}. Choose from 'lr' or 'rf'.")
     
     return model
 

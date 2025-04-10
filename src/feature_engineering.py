@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def create_bmi_feature(data, weight_col='Weight', height_col='Height'):
+def create_bmi_feature(data, weight_col=None, height_col=None):
     """
     Calculate BMI (Body Mass Index) as a new feature
     
@@ -9,10 +9,10 @@ def create_bmi_feature(data, weight_col='Weight', height_col='Height'):
     -----------
     data : pandas.DataFrame
         Input dataframe
-    weight_col : str
+    weight_col : str, optional
         Name of weight column (in kilograms)
-    height_col : str
-        Name of height column (in meters)
+    height_col : str, optional
+        Name of height column (in meters or centimeters)
         
     Returns:
     --------
@@ -21,6 +21,44 @@ def create_bmi_feature(data, weight_col='Weight', height_col='Height'):
     """
     # Make a copy to avoid modifying the original dataframe
     df = data.copy()
+    
+    # Identify column names
+    if weight_col is None:
+        # Try to find the appropriate column name
+        if 'Weight' in df.columns:
+            weight_col = 'Weight'
+        elif 'Weight (kg)' in df.columns:
+            weight_col = 'Weight (kg)'
+        else:
+            # Use the first column with 'weight' in the name (case insensitive)
+            weight_cols = [col for col in df.columns if 'weight' in col.lower()]
+            if weight_cols:
+                weight_col = weight_cols[0]
+            else:
+                raise KeyError("Could not find weight column in the dataset.")
+    
+    if height_col is None:
+        # Try to find the appropriate column name
+        if 'Height' in df.columns:
+            height_col = 'Height'
+        elif 'Height (cm)' in df.columns:
+            height_col = 'Height (cm)'
+            # Convert cm to meters for BMI calculation
+            df['Height (m)'] = df[height_col] / 100
+            height_col = 'Height (m)'
+        else:
+            # Use the first column with 'height' in the name (case insensitive)
+            height_cols = [col for col in df.columns if 'height' in col.lower()]
+            if height_cols:
+                height_col = height_cols[0]
+                # Check if it's in cm and convert if needed
+                if 'cm' in height_col.lower():
+                    df['Height (m)'] = df[height_col] / 100
+                    height_col = 'Height (m)'
+            else:
+                raise KeyError("Could not find height column in the dataset.")
+    
+    print(f"Using columns for BMI calculation: {weight_col} / {height_col}")
     
     # Calculate BMI
     df['BMI'] = df[weight_col] / (df[height_col] ** 2)
@@ -37,7 +75,7 @@ def create_bmi_feature(data, weight_col='Weight', height_col='Height'):
     
     return df
 
-def create_age_group_feature(data, age_col='Age'):
+def create_age_group_feature(data, age_col=None):
     """
     Create age group categories as a new feature
     
@@ -45,7 +83,7 @@ def create_age_group_feature(data, age_col='Age'):
     -----------
     data : pandas.DataFrame
         Input dataframe
-    age_col : str
+    age_col : str, optional
         Name of age column
         
     Returns:
@@ -55,6 +93,21 @@ def create_age_group_feature(data, age_col='Age'):
     """
     # Make a copy to avoid modifying the original dataframe
     df = data.copy()
+    
+    # Identify column name
+    if age_col is None:
+        # Try to find the appropriate column name
+        if 'Age' in df.columns:
+            age_col = 'Age'
+        else:
+            # Use the first column with 'age' in the name (case insensitive)
+            age_cols = [col for col in df.columns if 'age' in col.lower()]
+            if age_cols:
+                age_col = age_cols[0]
+            else:
+                raise KeyError("Could not find age column in the dataset.")
+    
+    print(f"Using column for age groups: {age_col}")
     
     # Create age groups
     df['Age_Group'] = pd.cut(
@@ -68,7 +121,7 @@ def create_age_group_feature(data, age_col='Age'):
     
     return df
 
-def create_workout_intensity_feature(data, heart_rate_col='Heart_Rate', resting_hr_col='Resting_Heart_Rate'):
+def create_workout_intensity_feature(data, heart_rate_col=None, resting_hr_col=None):
     """
     Calculate workout intensity based on heart rate reserve
     
@@ -76,9 +129,9 @@ def create_workout_intensity_feature(data, heart_rate_col='Heart_Rate', resting_
     -----------
     data : pandas.DataFrame
         Input dataframe
-    heart_rate_col : str
+    heart_rate_col : str, optional
         Name of workout heart rate column
-    resting_hr_col : str
+    resting_hr_col : str, optional
         Name of resting heart rate column
         
     Returns:
@@ -89,8 +142,50 @@ def create_workout_intensity_feature(data, heart_rate_col='Heart_Rate', resting_
     # Make a copy to avoid modifying the original dataframe
     df = data.copy()
     
+    # Identify column names
+    if heart_rate_col is None:
+        # Try to find the appropriate column name
+        if 'Heart_Rate' in df.columns:
+            heart_rate_col = 'Heart_Rate'
+        elif 'Heart Rate (bpm)' in df.columns:
+            heart_rate_col = 'Heart Rate (bpm)'
+        else:
+            # Use the first column with 'heart rate' in the name (case insensitive)
+            hr_cols = [col for col in df.columns if 'heart rate' in col.lower() and 'rest' not in col.lower()]
+            if hr_cols:
+                heart_rate_col = hr_cols[0]
+            else:
+                raise KeyError("Could not find heart rate column in the dataset.")
+    
+    if resting_hr_col is None:
+        # Try to find the appropriate column name
+        if 'Resting_Heart_Rate' in df.columns:
+            resting_hr_col = 'Resting_Heart_Rate'
+        elif 'Resting Heart Rate (bpm)' in df.columns:
+            resting_hr_col = 'Resting Heart Rate (bpm)'
+        else:
+            # Use the first column with 'resting heart rate' in the name (case insensitive)
+            rhr_cols = [col for col in df.columns if 'heart rate' in col.lower() and 'rest' in col.lower()]
+            if rhr_cols:
+                resting_hr_col = rhr_cols[0]
+            else:
+                raise KeyError("Could not find resting heart rate column in the dataset.")
+    
+    print(f"Using columns for intensity calculation: {heart_rate_col} and {resting_hr_col}")
+    
+    # Get age column
+    age_col = None
+    if 'Age' in df.columns:
+        age_col = 'Age'
+    else:
+        age_cols = [col for col in df.columns if 'age' in col.lower()]
+        if age_cols:
+            age_col = age_cols[0]
+        else:
+            raise KeyError("Could not find age column in the dataset.")
+    
     # Calculate maximum heart rate (simple formula: 220 - age)
-    df['Max_Heart_Rate'] = 220 - df['Age']
+    df['Max_Heart_Rate'] = 220 - df[age_col]
     
     # Calculate heart rate reserve (HRR)
     df['Heart_Rate_Reserve'] = df['Max_Heart_Rate'] - df[resting_hr_col]
@@ -144,7 +239,7 @@ def create_time_based_features(data, date_col='Date'):
     
     return df
 
-def create_combined_lifestyle_score(data, sleep_col='Sleep_Hours', water_col='Water_Intake', calories_col='Daily_Calories'):
+def create_combined_lifestyle_score(data, sleep_col=None, water_col=None, calories_col=None):
     """
     Create a combined lifestyle score based on sleep, water intake, and calorie intake
     
@@ -152,11 +247,11 @@ def create_combined_lifestyle_score(data, sleep_col='Sleep_Hours', water_col='Wa
     -----------
     data : pandas.DataFrame
         Input dataframe
-    sleep_col : str
+    sleep_col : str, optional
         Name of sleep hours column
-    water_col : str
+    water_col : str, optional
         Name of water intake column
-    calories_col : str
+    calories_col : str, optional
         Name of daily calories column
         
     Returns:
@@ -166,6 +261,56 @@ def create_combined_lifestyle_score(data, sleep_col='Sleep_Hours', water_col='Wa
     """
     # Make a copy to avoid modifying the original dataframe
     df = data.copy()
+    
+    # Identify column names
+    if sleep_col is None:
+        # Try to find the appropriate column name
+        if 'Sleep_Hours' in df.columns:
+            sleep_col = 'Sleep_Hours'
+        elif 'Sleep Hours' in df.columns:
+            sleep_col = 'Sleep Hours'
+        else:
+            # Use the first column with 'sleep' in the name (case insensitive)
+            sleep_cols = [col for col in df.columns if 'sleep' in col.lower()]
+            if sleep_cols:
+                sleep_col = sleep_cols[0]
+            else:
+                raise KeyError("Could not find sleep hours column in the dataset.")
+    
+    if water_col is None:
+        # Try to find the appropriate column name
+        if 'Water_Intake' in df.columns:
+            water_col = 'Water_Intake'
+        elif 'Water Intake (liters)' in df.columns:
+            water_col = 'Water Intake (liters)'
+        else:
+            # Use the first column with 'water' in the name (case insensitive)
+            water_cols = [col for col in df.columns if 'water' in col.lower()]
+            if water_cols:
+                water_col = water_cols[0]
+            else:
+                raise KeyError("Could not find water intake column in the dataset.")
+    
+    if calories_col is None:
+        # Try to find the appropriate column name
+        if 'Daily_Calories' in df.columns:
+            calories_col = 'Daily_Calories'
+        elif 'Daily Calories Intake' in df.columns:
+            calories_col = 'Daily Calories Intake'
+        else:
+            # Use the first column with 'daily' and 'calorie' in the name (case insensitive)
+            calorie_cols = [col for col in df.columns if 'daily' in col.lower() and 'calorie' in col.lower()]
+            if calorie_cols:
+                calories_col = calorie_cols[0]
+            else:
+                # Try just 'calorie' in the name
+                calorie_cols = [col for col in df.columns if 'calorie' in col.lower() and 'burn' not in col.lower()]
+                if calorie_cols:
+                    calories_col = calorie_cols[0]
+                else:
+                    raise KeyError("Could not find daily calories column in the dataset.")
+    
+    print(f"Using columns for lifestyle score: {sleep_col}, {water_col}, and {calories_col}")
     
     # Calculate Z-scores for each metric
     sleep_z = (df[sleep_col] - df[sleep_col].mean()) / df[sleep_col].std()
@@ -228,4 +373,4 @@ def create_all_features(data):
     return df
 
 # Import the function since we reference it
-from preprocessing import create_workout_efficiency_category
+from src.preprocessing import create_workout_efficiency_category

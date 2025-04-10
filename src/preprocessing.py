@@ -123,7 +123,7 @@ def create_preprocessing_pipeline(numeric_cols, categorical_cols):
     
     return preprocessor
 
-def create_workout_efficiency_category(data, calories_col='Calories_Burned', duration_col='Workout_Duration'):
+def create_workout_efficiency_category(data, calories_col=None, duration_col=None):
     """
     Create a derived feature for workout efficiency (calories burned per minute)
     and categorize it into Low, Medium, and High
@@ -132,9 +132,9 @@ def create_workout_efficiency_category(data, calories_col='Calories_Burned', dur
     -----------
     data : pandas.DataFrame
         Input dataframe
-    calories_col : str
+    calories_col : str, optional
         Name of the calories burned column
-    duration_col : str
+    duration_col : str, optional
         Name of the workout duration column (in minutes)
         
     Returns:
@@ -144,6 +144,37 @@ def create_workout_efficiency_category(data, calories_col='Calories_Burned', dur
     """
     # Make a copy to avoid modifying the original dataframe
     df = data.copy()
+    
+    # Identify column names for calories and duration
+    if calories_col is None:
+        # Try to find the appropriate column name
+        if 'Calories_Burned' in df.columns:
+            calories_col = 'Calories_Burned'
+        elif 'Calories Burned' in df.columns:
+            calories_col = 'Calories Burned'
+        else:
+            # Use the first column with 'calorie' in the name (case insensitive)
+            calorie_cols = [col for col in df.columns if 'calorie' in col.lower()]
+            if calorie_cols:
+                calories_col = calorie_cols[0]
+            else:
+                raise KeyError("Could not find calories column in the dataset.")
+    
+    if duration_col is None:
+        # Try to find the appropriate column name
+        if 'Workout_Duration' in df.columns:
+            duration_col = 'Workout_Duration'
+        elif 'Workout Duration (mins)' in df.columns:
+            duration_col = 'Workout Duration (mins)'
+        else:
+            # Use the first column with 'duration' in the name (case insensitive)
+            duration_cols = [col for col in df.columns if 'duration' in col.lower()]
+            if duration_cols:
+                duration_col = duration_cols[0]
+            else:
+                raise KeyError("Could not find workout duration column in the dataset.")
+    
+    print(f"Using columns for efficiency calculation: {calories_col} / {duration_col}")
     
     # Calculate efficiency (calories per minute)
     df['Workout_Efficiency_Score'] = df[calories_col] / df[duration_col]

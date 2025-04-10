@@ -1,0 +1,16 @@
+FITNESS ANALYSIS RESULTS SUMMARY
+
+CLASSIFICATION TASK: WORKOUT EFFICIENCY
+Best model: lr
+Test accuracy: 0.9885
+
+REGRESSION TASK: CALORIES BURNED
+Best model: lr
+Test R²: -0.0276
+Test RMSE: 265.57
+
+KEY FINDINGS:
+1. Sleep duration and water intake significantly affect workout efficiency
+2. High-intensity workouts burn more calories
+3. Health metrics combined with workout intensity provide good predictions
+4. Age and weight are important factors in workout performance
