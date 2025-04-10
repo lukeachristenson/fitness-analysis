@@ -21,7 +21,7 @@ import subprocess
 
 # Check if required packages are installed
 required_packages = [
-    'numpy', 'pandas', 'matplotlib', 'seaborn', 'scikit-learn', 'joblib'
+    'numpy', 'pandas', 'matplotlib', 'seaborn', 'scikit-learn', 'joblib', 'scipy'
 ]
 
 def check_and_install_packages(packages):
