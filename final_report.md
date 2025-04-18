@@ -1,4 +1,5 @@
 # Fitness Data Analysis: Understanding Workout Performance and Health Factors
+Ipek Ozcan and Luke Christenson
 
 ## Executive Summary
 
